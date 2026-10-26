@@ -83,7 +83,7 @@ Edit `.env` and configure:
 
 ```dotenv
 GITHUB_TOKEN=YOUR_TOKEN
-OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_BASE_URL=server Link
 OLLAMA_MODEL=gemma4:12b
 ```
 
