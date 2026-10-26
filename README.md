@@ -1,671 +1,130 @@
-<div align="center">
+# PANDA
 
-# 🐼 PANDA
+**From GitHub issue to evidence-grounded engineering recommendation.**
 
-### **From Open-Source Issue to Working Solution.**
+PANDA helps open-source contributors find a suitable issue, inspect relevant repository evidence, and understand a practical next step. Connect a GitHub repository, browse real open issues, filter them with PANDA estimates, and ask the local model to analyze a selected issue.
 
-**PANDA** is an AI-powered open-source contribution platform that helps developers  
-**find → understand → plan → solve → verify** GitHub issues.
+## The problem
 
-<br/>
+Large repositories can have thousands of open issues. A contributor must often judge whether an issue is appropriate, understand its context, locate relevant source and tests, and determine what work is involved before making a contribution.
 
-**Issue Filter · Issue Analyzer · Issue Solver · Verification**
-
-<br/>
-
----
-
-> **Stop scrolling through issues. Start contributing.**
-
-</div>
-
-## Phase 1 Foundation (current implementation)
-
-The repository now contains the base React/Vite frontend and FastAPI backend. The current application provides a landing page and placeholder routes for Repository, Issue Explorer, Issue Analysis, and Implementation. The frontend checks the backend through `GET /api/health`.
-
-The feature descriptions, AI architecture, and demo flow in the original overview below describe planned product behavior; they are not proof of implemented functionality. This phase implements only the application foundation and placeholder routes. There is no GitHub API connection, repository or issue analysis, AI/model integration, solver, or verification behavior yet.
-
-### Run locally
-
-Requirements: Node.js with npm, and Python 3.10 or newer.
-
-```bash
-# Terminal 1: backend
-python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-pip install -r backend/requirements.txt
-uvicorn app.main:app --reload --app-dir backend
-
-# Terminal 2: frontend
-cd frontend
-npm install
-npm run dev
-```
-
-Open the Vite URL printed in the terminal (normally `http://localhost:5173`). The header reports whether the local backend health endpoint is reachable. The Vite development server proxies `/api` to `http://127.0.0.1:8000`.
-
-The backend accepts optional `BACKEND_CORS_ORIGINS` as a comma-separated list. Copy `.env.example` to `.env` to use the local defaults.
-
-### Current stack
-
-- Frontend: React, Vite, JavaScript/JSX, React Router, Framer Motion, and Lucide React.
-- Backend: Python, FastAPI, and Uvicorn.
-- No database, model runtime, or third-party service integration is part of Phase 1.
-
-<br/>
-
-## ✦ What is PANDA?
-
-Large open-source projects can have **hundreds or even thousands of open issues**.
-
-Finding an issue is easy.
-
-**Understanding what the issue actually requires is the hard part.**
-
-A contributor often has to manually:
-
-- read the issue and discussion
-- explore the repository
-- find the relevant code
-- understand the architecture
-- locate existing tests
-- figure out the actual implementation
-- decide whether the issue is suitable for them
-- implement the change
-- verify that the solution really works
-
-**PANDA brings that entire process into one workflow.**
+## What PANDA does
 
 ```text
-        GitHub Repository
-               │
-               ▼
-        ┌───────────────┐
-        │  ISSUE FILTER │
-        └───────┬───────┘
-                │
-                ▼
-        ┌────────────────┐
-        │ ISSUE ANALYZER  │
-        └───────┬────────┘
-                │
-                ▼
-        ┌────────────────┐
-        │  TASK / PLAN    │
-        └───────┬────────┘
-                │
-                ▼
-        ┌────────────────┐
-        │  ISSUE SOLVER   │
-        └───────┬────────┘
-                │
-                ▼
-        ┌────────────────┐
-        │   VERIFY FIX    │
-        └────────────────┘
+GitHub Repository
+  -> Real Open Issues
+  -> PANDA Difficulty / Skill / Effort Filters
+  -> Select an Issue
+  -> Repository Evidence Retrieval
+  -> Gemma 4 through Ollama
+  -> Structured Engineering Recommendation
 ```
 
----
+PANDA connects to public GitHub repositories, retrieves real issue data, and provides deterministic estimates for difficulty, primary skill, and effort. When a contributor selects an issue for analysis, PANDA retrieves relevant repository files and tests and asks Gemma for five concise fields: file to change, why, what to change, proposed fix, and test to run or add.
 
-## 🎯 The Problem
+PANDA presents a recommendation only. It does not modify source files, run tests, create pull requests, or verify a fix.
 
-Open-source repositories expose a huge amount of work, but contributors often don't know:
+## Key differentiator
 
-> **Which issue should I work on?**
+PANDA combines contributor-focused issue estimates with evidence from the selected repository. Difficulty, skill, and effort estimates are deterministic and do not depend on GitHub labels or an LLM. Deep analysis is grounded in retrieved repository evidence rather than only the issue text.
 
-> **What does this issue actually mean?**
-
-> **How difficult is it really?**
-
-> **Which part of the codebase is involved?**
-
-> **What exactly should I change?**
-
-> **How do I know my fix actually solves the issue?**
-
-GitHub labels and issue descriptions provide useful information, but they don't take a contributor through the complete engineering process.
-
-**PANDA is built around that missing layer.**
-
----
-
-## 🐼 What PANDA Does
-
-### 01 — Filter Issues
-
-PANDA analyzes the issue backlog and organizes issues from a **contributor's perspective**.
-
-Example categories:
-
-| Category | Meaning |
-|---|---|
-| 🟢 Beginner | Suitable for someone new to the project |
-| 🔵 Bug Fix | Existing behavior needs correction |
-| 🟡 Small Implementation | Localized engineering change |
-| 🟣 Feature | New functionality |
-| 🟠 Testing | Missing or improved test coverage |
-| ⚪ Documentation | Documentation-related contribution |
-| 🔴 Complex | Requires deeper project knowledge |
-| 🧩 Investigation | Requires further technical investigation |
-
-The goal isn't simply to reproduce GitHub labels.
-
-PANDA tries to answer:
-
-> **“What kind of engineering work would I actually be doing?”**
-
----
-
-### 02 — Analyze an Issue
-
-Select an issue and PANDA investigates the repository around it.
-
-It can use relevant:
-
-- Issue content
-- Comments
-- Source code
-- Repository structure
-- Tests
-- Documentation
-- Related issues / PRs
-- Relevant Git history
-
-The result becomes an engineering-focused analysis.
-
-#### Example
+## Architecture
 
 ```text
-Issue #482
-
-Type
-Bug Fix
-
-Difficulty
-Medium
-
-Required knowledge
-Python
-Async programming
-Testing
-
-Affected area
-src/network/...
-
-Root cause
-...
-
-Current behavior
-...
-
-Expected behavior
-...
-
-Implementation direction
-...
-
-Recommended tests
-...
+React + Vite browser app
+      | /api requests
+      v
+FastAPI backend
+      |-- GitHub REST API: repository metadata, issues, labels, source evidence
+      |-- deterministic PANDA issue estimates
+      |-- focused repository-context retrieval
+      `-- Ollama local API
+              `-- Gemma 4 12B
 ```
 
----
+PANDA uses **Gemma 4 locally through Ollama as its AI model**. The GitHub token stays in the backend environment and is never sent to the frontend.
 
-### 03 — Turn an Issue into a Real Engineering Task
+## Tech stack
 
-GitHub issues are often written as a description of a problem.
+- **Frontend:** React, Vite, React Router, Framer Motion, Lucide React
+- **Backend:** Python, FastAPI, Uvicorn, HTTPX, python-dotenv
+- **AI runtime and model:** Ollama and Gemma 4 12B
+- **Repository data:** GitHub REST API
 
-PANDA transforms them into a **practical implementation plan**.
+## Quick start
 
-```text
-GOAL
-Fix incorrect retry behavior.
+Prerequisites: Git, Python 3.10 or newer, Node.js 20.19+ or 22.12+, npm, and Ollama.
 
-FILES
-src/retry/handler.py
-tests/retry/test_handler.py
-
-IMPLEMENTATION
-1. Detect duplicate retry state.
-2. Preserve existing retry behavior.
-3. Handle timeout case.
-4. Add regression tests.
-
-ACCEPTANCE CRITERIA
-✓ Duplicate requests do not trigger multiple retries.
-✓ Existing retry tests remain unchanged.
-✓ New regression test passes.
-```
-
-Instead of asking:
-
-> “What does this issue mean?”
-
-the contributor gets:
-
-> **“Here is what you actually need to do.”**
-
----
-
-### 04 — Solve the Issue
-
-Once the contributor understands the task, PANDA assists with implementation.
-
-The solver can:
-
-- identify relevant code locations
-- suggest implementation changes
-- generate an implementation plan
-- propose code changes
-- generate/update tests
-- help interpret implementation failures
-
-PANDA is designed to work **with the repository's existing architecture**, rather than inventing a completely different solution.
-
----
-
-### 05 — Verify the Solution
-
-A proposed fix is not enough.
-
-PANDA should help determine whether the solution actually works.
-
-```text
-Implementation
-      │
-      ▼
-     Tests
-      │
- ┌────┴────┐
- ▼         ▼
-PASS      FAIL
- │          │
- ▼          ▼
-Resolved   Investigate
-```
-
-Example:
-
-```text
-✓ 42 existing tests passed
-✓ 3 regression tests passed
-✓ Expected behavior verified
-
-Result
-Issue appears resolved.
-```
-
----
-
-# ✦ AI Architecture
-
-PANDA uses **Gemma 4** as the core AI model.
-
-The model is run locally using **Ollama**.
-
-```text
-┌───────────────────────────────┐
-│           PANDA UI            │
-│  Filter · Analyze · Solve     │
-└───────────────┬───────────────┘
-                │
-                ▼
-┌───────────────────────────────┐
-│         PANDA Backend          │
-│                               │
-│  GitHub Integration            │
-│  Repository Context            │
-│  Issue Processing              │
-│  Agent Orchestration           │
-│  Verification                  │
-└───────────────┬───────────────┘
-                │
-                ▼
-┌───────────────────────────────┐
-│            Ollama              │
-│                               │
-│           Gemma 4              │
-└───────────────┬───────────────┘
-                │
-                ▼
-        AI-generated reasoning
-```
-
-### Why local inference?
-
-Running Gemma through Ollama allows PANDA to use the model locally without making the entire system dependent on a hosted model API.
-
-It also makes the AI component easy to demonstrate during a live presentation.
-
----
-
-# 🧠 Repository-Aware AI
-
-PANDA should **not behave like a generic chatbot**.
-
-Instead of giving the model only the GitHub issue:
-
-```text
-Issue
-  +
-Relevant repository context
-  +
-Relevant tests
-  +
-Relevant history
-        ↓
-     Gemma 4
-        ↓
-Engineering reasoning
-```
-
-The system should retrieve the information that is actually relevant to the selected issue.
-
-### Evidence First
-
-PANDA distinguishes between:
-
-**Evidence**
-
-> What was actually found in the repository.
-
-**Inference**
-
-> What the model concludes from that evidence.
-
-This helps reduce hallucinated repository details and makes the generated analysis easier to trust.
-
----
-
-# ✦ Key Features
-
-| Feature | Description |
-|---|---|
-| 🗂️ Issue Filtering | Discover useful contribution opportunities |
-| 🔍 Issue Analysis | Understand what an issue actually requires |
-| 🧠 Repository Context | Reason using relevant project information |
-| 🛠️ Engineering Plans | Convert issues into actionable tasks |
-| 💻 Solution Assistance | Help implement the required changes |
-| 🧪 Verification | Check whether the proposed fix works |
-| 🐼 Gemma 4 | Open model powering the AI workflow |
-| ⚡ Ollama | Local model runtime |
-
----
-
-# 📸 Screenshots
-
-> Screenshots will be added here as the project UI is finalized.
-
-### Dashboard
-
-<img src="screenshots/dashboard.png" alt="PANDA Dashboard" width="100%"/>
-
-### Issue Explorer
-
-<img src="screenshots/issue-explorer.png" alt="PANDA Issue Explorer" width="100%"/>
-
-### Issue Analysis
-
-<img src="screenshots/issue-analysis.png" alt="PANDA Issue Analysis" width="100%"/>
-
-### Solution Workspace
-
-<img src="screenshots/solution-workspace.png" alt="PANDA Solution Workspace" width="100%"/>
-
-### Verification
-
-<img src="screenshots/verification.png" alt="PANDA Verification" width="100%"/>
-
----
-
-# ⚙️ How PANDA Works
-
-```text
-01
-Connect Repository
-       ↓
-02
-Fetch Issues
-       ↓
-03
-Filter & Classify
-       ↓
-04
-Retrieve Relevant Repository Context
-       ↓
-05
-Analyze Selected Issue
-       ↓
-06
-Generate Engineering Plan
-       ↓
-07
-Assist With Implementation
-       ↓
-08
-Run / Analyze Tests
-       ↓
-09
-Verify Solution
-```
-
----
-
-# 🚀 Quick Start
-
-## Prerequisites
-
-Make sure you have:
-
-- Git
-- Python / Node.js depending on the project setup
-- GitHub access
-- Ollama
-- Gemma 4 model
-
-### Start Ollama
-
-```bash
-ollama serve
-```
-
-### Pull the Gemma model
-
-```bash
-ollama pull gemma4
-```
-
-### Start PANDA
-
-```bash
-# Clone the repository
-git clone <your-repository-url>
-
+```powershell
+git clone https://github.com/AaryanRS/PANDA.git
 cd PANDA
 
-# Install dependencies
-<install-command>
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 
-# Start the application
-<start-command>
+cd frontend
+npm install
+cd ..
+
+Copy-Item .env.example .env
 ```
 
-> [!IMPORTANT]
-> The exact model variant and installation commands may change depending on the final PANDA architecture.
+Edit `.env` with your GitHub token and the local Ollama settings. Install Ollama, then download and test the model:
 
----
+```powershell
+ollama --version
+ollama pull gemma4:12b
+ollama run gemma4:12b
+```
 
-# 🛠️ Tech Stack
+In a second terminal from the repository root, start the backend:
 
-### AI
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload
+```
 
-- **Gemma 4**
-- **Ollama**
+In another terminal, start the frontend:
 
-### Platform
+```powershell
+cd frontend
+npm.cmd run dev
+```
 
-- GitHub API
-- Repository analysis
-- Git history
-- Automated testing
+Open [http://localhost:5173](http://localhost:5173). For token creation, full setup steps, and troubleshooting, see [SETUP.md](SETUP.md).
 
-### Application
+## Ollama and Gemma 4
 
-- Frontend: `TBD`
-- Backend: `TBD`
-- Database / Vector Store: `TBD`
-
----
-
-# 🧩 Project Architecture
+Install Ollama from [ollama.com/download](https://ollama.com/download). Verify the CLI, download `gemma4:12b`, and run it directly with the commands above. At the Ollama prompt, type a normal question such as:
 
 ```text
-PANDA
-│
-├── frontend/
-│   ├── dashboard
-│   ├── issue-explorer
-│   ├── issue-analysis
-│   ├── solver
-│   └── verification
-│
-├── backend/
-│   ├── github/
-│   ├── repository/
-│   ├── retrieval/
-│   ├── agents/
-│   ├── solver/
-│   └── verification/
-│
-├── models/
-│   └── gemma/
-│
-└── README.md
+Explain REST APIs in simple terms.
 ```
 
-> The final architecture will evolve as implementation progresses.
+Ollama normally exposes its local API at `http://127.0.0.1:11434`. PANDA uses this default programmatically; it remains the default unless Ollama is configured otherwise. Configure `OLLAMA_BASE_URL` and `OLLAMA_MODEL` in the repository-root `.env` if you use a different local configuration.
 
----
+## GitHub token
 
-# 🎥 Demo Flow
+PANDA uses a GitHub Personal Access Token for authenticated API requests and improved rate limits. Public repository browsing can work without a token, but an optional fine-grained token is recommended. Grant read-only **Metadata**, **Issues**, and **Contents** permissions for the repositories PANDA will access. Never place the token in source code, share it, or commit `.env`.
 
-The intended PANDA demonstration is:
+The local `.env` should include:
 
-```text
-Open PANDA
-   ↓
-Select an Open-Source Repository
-   ↓
-Browse / Filter Issues
-   ↓
-Select an Issue
-   ↓
-Analyze Repository Context
-   ↓
-Understand the Actual Problem
-   ↓
-Generate Implementation Plan
-   ↓
-Solve the Issue
-   ↓
-Run Tests
-   ↓
-Verify the Fix
+```dotenv
+GITHUB_TOKEN=YOUR_TOKEN
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=gemma4:12b
 ```
 
-### The goal of the demo
+`.env` is ignored by Git. Keep the real value only in your local `.env` file.
 
-Show the transformation:
+## Demo workflow
 
-**Before PANDA**
+1. Connect a GitHub repository URL.
+2. Browse its real open issues and use PANDA Difficulty, Skill, and Effort filters.
+3. Select an issue to open the analysis view.
+4. PANDA retrieves focused repository source and test evidence.
+5. Gemma 4 through Ollama returns a structured engineering recommendation.
 
-> “There are hundreds of issues. Which one can I actually solve?”
+## Repository
 
-**After PANDA**
-
-> “I know what the issue means, what code is involved, what I need to change, and whether my solution works.”
-
----
-
-# 🔐 Design Principles
-
-### Repository First
-
-Use actual repository information whenever possible.
-
-### Evidence Over Guessing
-
-Do not confidently invent implementation details.
-
-### Contributor Focused
-
-Optimize for helping a developer **contribute**, not just helping a maintainer label issues.
-
-### End-to-End
-
-PANDA should move beyond:
-
-```text
-Issue → Explanation
-```
-
-and aim for:
-
-```text
-Issue → Understanding → Implementation → Verification
-```
-
----
-
-# 🗺️ Roadmap
-
-- [x] Project concept
-- [x] PANDA branding
-- [ ] Base application
-- [ ] GitHub repository integration
-- [ ] Issue filtering
-- [ ] Issue analysis
-- [ ] Repository-aware retrieval
-- [ ] Gemma 4 + Ollama integration
-- [ ] Engineering plan generation
-- [ ] Solution workflow
-- [ ] Test / verification system
-- [ ] Final demo workflow
-- [ ] Documentation
-- [ ] Screenshots & showcase
-
----
-
-# 🤝 Contributing
-
-PANDA is built around the open-source ecosystem.
-
-Contributions, ideas, issues, and feedback are welcome.
-
-```text
-Fork → Build → Test → Improve → Contribute
-```
-
----
-
-# 📌 Project Status
-
-> 🚧 **PANDA is currently under active development.**
-
-The project is being built as a hackathon prototype with a focus on demonstrating a complete AI-assisted open-source contribution workflow.
-
----
-
-<div align="center">
-
-## 🐼 PANDA
-
-### **Find the issue. Understand the work. Ship the fix.**
-
-Built with **Gemma 4 + Ollama + Open Source**
-
-<br/>
-
-**Made for developers who want to contribute — not just browse.**
-
-</div>
+[github.com/AaryanRS/PANDA](https://github.com/AaryanRS/PANDA)
