@@ -19,6 +19,40 @@
 
 </div>
 
+## Phase 1 Foundation (current implementation)
+
+The repository now contains the base React/Vite frontend and FastAPI backend. The current application provides a landing page and placeholder routes for Repository, Issue Explorer, Issue Analysis, and Implementation. The frontend checks the backend through `GET /api/health`.
+
+The feature descriptions, AI architecture, and demo flow in the original overview below describe planned product behavior; they are not proof of implemented functionality. This phase implements only the application foundation and placeholder routes. There is no GitHub API connection, repository or issue analysis, AI/model integration, solver, or verification behavior yet.
+
+### Run locally
+
+Requirements: Node.js with npm, and Python 3.10 or newer.
+
+```bash
+# Terminal 1: backend
+python -m venv .venv
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+pip install -r backend/requirements.txt
+uvicorn app.main:app --reload --app-dir backend
+
+# Terminal 2: frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL printed in the terminal (normally `http://localhost:5173`). The header reports whether the local backend health endpoint is reachable. The Vite development server proxies `/api` to `http://127.0.0.1:8000`.
+
+The backend accepts optional `BACKEND_CORS_ORIGINS` as a comma-separated list. Copy `.env.example` to `.env` to use the local defaults.
+
+### Current stack
+
+- Frontend: React, Vite, JavaScript/JSX, React Router, Framer Motion, and Lucide React.
+- Backend: Python, FastAPI, and Uvicorn.
+- No database, model runtime, or third-party service integration is part of Phase 1.
+
 <br/>
 
 ## ✦ What is PANDA?
