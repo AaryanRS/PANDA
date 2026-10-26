@@ -4,6 +4,21 @@
 
 PANDA helps open-source contributors find a suitable issue, inspect relevant repository evidence, and understand a practical next step. Connect a GitHub repository, browse real open issues, filter them with PANDA estimates, and ask the local model to analyze a selected issue.
 
+
+UI ---- UX
+
+
+
+https://github.com/user-attachments/assets/4af6e037-0abc-4db8-9636-641d57bbd533
+
+
+---
+
+<img width="2541" height="1597" alt="Screenshot 2026-10-26 143756" src="https://github.com/user-attachments/assets/a0603dc3-6b83-416f-ae66-6fe1cc13cd82" />
+
+<img width="2557" height="1597" alt="Screenshot 2026-10-26 143802" src="https://github.com/user-attachments/assets/b5d37836-0fee-4ec9-83c2-a901cb5afc2d" />
+
+
 ## The problem
 
 Large repositories can have thousands of open issues. A contributor must often judge whether an issue is appropriate, understand its context, locate relevant source and tests, and determine what work is involved before making a contribution.
